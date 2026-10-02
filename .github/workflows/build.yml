@@ -42,3 +42,16 @@ jobs:
         with:
           name: MyApp-ipa
           path: MyApp.ipa
+      - name: Publish to Pages
+        if: success()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          mkdir -p /tmp/publish
+          cp MyApp.ipa /tmp/publish/
+          git checkout --orphan gh-pages
+          git rm -rf . > /dev/null 2>&1 || true
+          cp /tmp/publish/MyApp.ipa .
+          git add MyApp.ipa
+          git commit -m "[skip ci] publish MyApp.ipa"
+          git push origin gh-pages --force
