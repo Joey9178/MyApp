@@ -16,7 +16,10 @@ jobs:
           xcodebuild -project MyApp.xcodeproj -scheme MyApp -destination 'generic/platform=iOS Simulator' -configuration Debug -derivedDataPath build build CODE_SIGNING_ALLOWED=NO > build.log 2>&1
           code=$?
           if [ $code -ne 0 ]; then
-            tail -n 60 build.log | awk '{print "::error::" $0}'
+            echo "## Build failed log" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat build.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
             exit $code
           fi
       - name: Upload log
