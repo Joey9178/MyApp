@@ -1,0 +1,20 @@
+name: Build iOS
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install xcodegen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build simulator
+        run: xcodebuild -project MyApp.xcodeproj -scheme MyApp -sdk iphonesimulator -configuration Debug -derivedDataPath build build CODE_SIGNING_ALLOWED=NO
+      - name: Upload app
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyApp-simulator
+          path: build/Build/Products/Debug-iphonesimulator/MyApp.app
