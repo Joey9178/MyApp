@@ -12,8 +12,21 @@ jobs:
       - name: Generate project
         run: xcodegen generate
       - name: Build simulator
-        run: xcodebuild -project MyApp.xcodeproj -scheme MyApp -sdk iphonesimulator -configuration Debug -derivedDataPath build build CODE_SIGNING_ALLOWED=NO
+        run: |
+          xcodebuild -project MyApp.xcodeproj -scheme MyApp -destination 'generic/platform=iOS Simulator' -configuration Debug -derivedDataPath build build CODE_SIGNING_ALLOWED=NO > build.log 2>&1
+          code=$?
+          if [ $code -ne 0 ]; then
+            tail -n 60 build.log | awk '{print "::error::" $0}'
+            exit $code
+          fi
+      - name: Upload log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
       - name: Upload app
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: MyApp-simulator
