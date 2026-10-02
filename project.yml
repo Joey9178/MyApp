@@ -1,6 +1,7 @@
 name: MyApp
 options:
   bundleIdPrefix: com.joey9178
+  objectVersion: 56
 targets:
   MyApp:
     type: application
