@@ -53,5 +53,11 @@ jobs:
           git rm -rf . > /dev/null 2>&1 || true
           cp /tmp/publish/MyApp.ipa .
           git add MyApp.ipa
-          git commit -m "[skip ci] publish MyApp.ipa"
-          git push origin gh-pages --force
+          git commit -m "[skip ci] publish MyApp.ipa" || true
+          err=$(git push "https://x-access-token:${GITHUB_TOKEN}@github.com/Joey9178/MyApp.git" gh-pages --force 2>&1)
+          code=$?
+          if [ $code -ne 0 ]; then
+            msg=$(echo "$err" | python3 -c "import sys; s=sys.stdin.read()[:1200]; print(s.replace('%','%25').replace(chr(13),'').replace(chr(10),'%0A'))")
+            echo "::error::$msg"
+            exit $code
+          fi
