@@ -20,6 +20,8 @@ jobs:
             echo '```' >> "$GITHUB_STEP_SUMMARY"
             cat build.log >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
+            msg=$(python3 -c "import sys; s=open('build.log').read()[:1800]; print(s.replace('%','%25').replace(chr(13),'').replace(chr(10),'%0A'))")
+            echo "::error::$msg"
             exit $code
           fi
       - name: Upload log
