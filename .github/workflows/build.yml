@@ -16,46 +16,21 @@ jobs:
           xcodebuild -project MyApp.xcodeproj -scheme MyApp -destination 'generic/platform=iOS' -configuration Debug -derivedDataPath build build CODE_SIGNING_ALLOWED=NO > build.log 2>&1
           code=$?
           if [ $code -ne 0 ]; then
-            cp build.log .github/build-error.log
             exit $code
           fi
           mkdir -p Payload
           cp -R build/Build/Products/Debug-iphoneos/MyApp.app Payload/
           zip -qr MyApp.ipa Payload
-      - name: Commit error log
-        if: failure()
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add .github/build-error.log
-          git commit -m "[skip ci] build error log" || true
-          git push || true
-      - name: Upload log
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log
-      - name: Upload ipa
+      - name: Upload artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: MyApp-ipa
           path: MyApp.ipa
-      - name: Publish to Pages
+      - name: Upload to temp host
         if: success()
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          mkdir -p /tmp/publish
-          cp MyApp.ipa /tmp/publish/
-          git checkout --orphan gh-pages
-          git rm -rf . > /dev/null 2>&1 || true
-          cp /tmp/publish/MyApp.ipa .
-          git add MyApp.ipa
-          git commit -m "[skip ci] publish MyApp.ipa" || true
-          if ! git push "https://x-access-token:${GITHUB_TOKEN}@github.com/Joey9178/MyApp.git" gh-pages --force > /tmp/push.log 2>&1; then
-            msg=$(python3 -c "import sys; s=open('/tmp/push.log').read()[:1200]; print(s.replace('%','%25').replace(chr(13),'').replace(chr(10),'%0A'))")
-            echo "::error::$msg"
-            exit 1
-          fi
+          url1=$(curl -s -F "reqtype=fileupload" -F "fileToUpload=@MyApp.ipa" https://catbox.moe/user/api.php)
+          echo "::notice title=IPA_CATBOX::$url1"
+          url2=$(curl -s --upload-file MyApp.ipa https://transfer.sh/MyApp.ipa)
+          echo "::notice title=IPA_TRANSFER::$url2"
