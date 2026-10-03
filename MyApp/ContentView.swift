@@ -17,35 +17,70 @@ struct ContentView: View {
 
 struct GlassBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [.blue.opacity(0.5), .purple.opacity(0.4), .pink.opacity(0.3)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        ZStack {
+            Color.black
+            RadialGradient(colors: [.blue.opacity(0.75), .clear], center: .topLeading, startRadius: 0, endRadius: 520)
+                .ignoresSafeArea()
+            RadialGradient(colors: [.purple.opacity(0.6), .clear], center: .bottomTrailing, startRadius: 0, endRadius: 620)
+                .ignoresSafeArea()
+            RadialGradient(colors: [.cyan.opacity(0.45), .clear], center: .center, startRadius: 0, endRadius: 420)
+                .ignoresSafeArea()
+            RadialGradient(colors: [.white.opacity(0.18), .clear], center: .top, startRadius: 0, endRadius: 300)
+                .ignoresSafeArea()
+        }
         .ignoresSafeArea()
     }
 }
 
-struct GlassCard: ViewModifier {
+struct LiquidGlass: ViewModifier {
+    var corner: CGFloat = 28
     func body(content: Content) -> some View {
         content
-            .padding(22)
-            .frame(maxWidth: .infinity)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .background(
+                RoundedRectangle(cornerRadius: corner, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: corner, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [.white.opacity(0.7), .white.opacity(0.08), .white.opacity(0.35)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(color: .black.opacity(0.3), radius: 22, x: 0, y: 10)
     }
 }
 
 extension View {
-    func glassCard() -> some View { modifier(GlassCard()) }
+    func glassCard(_ corner: CGFloat = 28) -> some View { modifier(LiquidGlass(corner: corner)) }
 }
 
-func glassIcon(_ system: String, _ color: Color, _ action: @escaping () -> Void) -> some View {
-    Button(action: action) {
-        Image(systemName: system)
-            .font(.system(size: 56))
-            .foregroundStyle(color)
-            .padding(14)
-            .background(.ultraThinMaterial, in: Circle())
+struct GlassButtonStyle: ButtonStyle {
+    var tint: Color
+    var corner: CGFloat = 20
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: corner, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: corner, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(colors: [tint.opacity(0.8), .white.opacity(0.15)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing),
+                        lineWidth: 1
+                    )
+            )
+            .foregroundStyle(tint)
+            .shadow(color: .black.opacity(0.25), radius: 12, x: 0, y: 6)
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
@@ -58,21 +93,28 @@ struct CounterView: View {
             VStack(spacing: 30) {
                 Text("计数器")
                     .font(.largeTitle.bold())
+                    .foregroundStyle(.white)
                 Text("\(count)")
                     .font(.system(size: 96, weight: .heavy))
+                    .foregroundStyle(.white)
                     .contentTransition(.numericText())
                 HStack(spacing: 30) {
-                    glassIcon("minus.circle.fill", .red) { count -= 1 }
-                    glassIcon("plus.circle.fill", .green) { count += 1 }
+                    Button(action: { count -= 1 }) {
+                        Image(systemName: "minus.circle.fill").font(.system(size: 56))
+                    }
+                    .buttonStyle(GlassButtonStyle(tint: .red))
+                    Button(action: { count += 1 }) {
+                        Image(systemName: "plus.circle.fill").font(.system(size: 56))
+                    }
+                    .buttonStyle(GlassButtonStyle(tint: .green))
                 }
                 Button("重置") { count = 0 }
                     .font(.headline)
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 30)
-                    .padding(.vertical, 12)
-                    .background(.ultraThinMaterial, in: Capsule())
+                    .buttonStyle(GlassButtonStyle(tint: .white, corner: 30))
             }
-            .glassCard()
+            .padding(30)
+            .glassCard(36)
         }
     }
 }
@@ -97,30 +139,27 @@ struct CalculatorView: View {
             VStack(spacing: 14) {
                 Text("计算器")
                     .font(.largeTitle.bold())
+                    .foregroundStyle(.white)
                 Text(display)
                     .font(.system(size: 52, weight: .bold))
+                    .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
                     .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 10)
                 ForEach(rows, id: \.self) { row in
                     HStack(spacing: 12) {
                         ForEach(row, id: \.self) { key in
-                            keyButton(key)
+                            Button(action: { press(key) }) {
+                                Text(key).font(.system(size: 30, weight: .medium)).frame(maxWidth: .infinity, minHeight: 62)
+                            }
+                            .buttonStyle(GlassButtonStyle(tint: key == "=" ? .yellow : .white, corner: 18))
                         }
                     }
                 }
             }
-            .glassCard()
-        }
-    }
-
-    func keyButton(_ key: String) -> some View {
-        Button { press(key) } label: {
-            Text(key)
-                .font(.system(size: 30, weight: .medium))
-                .frame(maxWidth: .infinity, minHeight: 62)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18))
+            .padding(20)
+            .glassCard(30)
         }
     }
 
@@ -166,6 +205,7 @@ struct TodoView: View {
             VStack(spacing: 16) {
                 Text("待办清单")
                     .font(.largeTitle.bold())
+                    .foregroundStyle(.white)
                 HStack {
                     TextField("添加事项…", text: $text)
                         .padding()
@@ -178,18 +218,17 @@ struct TodoView: View {
                 List {
                     ForEach(items, id: \.self) { item in
                         HStack {
-                            Text(item)
-                                .font(.title3)
+                            Text(item).font(.title3)
                             Spacer()
                             Button {
                                 items.removeAll { $0 == item }
                                 save()
                             } label: {
-                                Image(systemName: "trash.fill")
-                                    .foregroundStyle(.red)
+                                Image(systemName: "trash.fill").foregroundStyle(.red)
                             }
                         }
                         .listRowBackground(Color.clear)
+                        .foregroundStyle(.white)
                     }
                 }
                 .scrollContentBackground(.hidden)
@@ -213,12 +252,14 @@ struct NotesView: View {
             VStack(spacing: 16) {
                 Text("备忘录")
                     .font(.largeTitle.bold())
+                    .foregroundStyle(.white)
                 TextEditor(text: $note)
                     .font(.title3)
                     .padding()
                     .frame(minHeight: 280)
                     .scrollContentBackground(.hidden)
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+                    .foregroundStyle(.white)
             }
             .glassCard()
         }
