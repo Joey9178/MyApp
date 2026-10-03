@@ -30,8 +30,11 @@ jobs:
       - name: Upload to temp host
         if: success()
         run: |
-          t1=$(curl -s -A "curl" -F "reqtype=fileupload" -F "fileToUpload=@MyApp.ipa" https://catbox.moe/user/api.php)
-          echo "::notice title=IPA_CATBOX::$t1"
-          t2=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://tmpfiles.org/api/v1/upload)
-          url2=$(echo "$t2" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('url','FAIL'))")
-          echo "::notice title=IPA_TMPFILES::$url2"
+          l1=$(curl -s -A "Mozilla/5.0 (Macintosh)" -F "reqtype=fileupload" -F "fileToUpload=@MyApp.ipa" https://litterbox.catbox.moe/resources/internals/api.php)
+          echo "::notice title=IPA_LITTERBOX::$l1"
+          f1=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://file.io)
+          u=$(echo "$f1" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('link','FAIL'))")
+          echo "::notice title=IPA_FILEIO::$u"
+          t1=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://tmpfiles.org/api/v1/upload)
+          u2=$(echo "$t1" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('url','FAIL'))")
+          echo "::notice title=IPA_TMPFILES::$u2"
