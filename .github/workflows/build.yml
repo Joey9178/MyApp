@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
       - name: Install xcodegen
@@ -32,10 +32,6 @@ jobs:
         run: |
           l1=$(curl -s -A "Mozilla/5.0" -F "reqtype=fileupload" -F "time=72h" -F "fileToUpload=@MyApp.ipa" https://litterbox.catbox.moe/resources/internals/api.php || true)
           echo "::notice title=IPA_LITTERBOX::$l1"
-          f1=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://file.io || true)
-          u=$(echo "$f1" | grep -o '"link":"[^"]*"' | head -1 | cut -d'"' -f4)
-          [ -z "$u" ] && u=FAIL
-          echo "::notice title=IPA_FILEIO::$u"
           t1=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://tmpfiles.org/api/v1/upload || true)
           u2=$(echo "$t1" | grep -o '"url":"[^"]*"' | head -1 | cut -d'"' -f4)
           [ -z "$u2" ] && u2=FAIL
