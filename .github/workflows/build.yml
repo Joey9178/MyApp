@@ -30,11 +30,13 @@ jobs:
       - name: Upload to temp host
         if: success()
         run: |
-          l1=$(curl -s -A "Mozilla/5.0 (Macintosh)" -F "reqtype=fileupload" -F "fileToUpload=@MyApp.ipa" https://litterbox.catbox.moe/resources/internals/api.php)
+          l1=$(curl -s -A "Mozilla/5.0" -F "reqtype=fileupload" -F "time=72h" -F "fileToUpload=@MyApp.ipa" https://litterbox.catbox.moe/resources/internals/api.php || true)
           echo "::notice title=IPA_LITTERBOX::$l1"
-          f1=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://file.io)
-          u=$(echo "$f1" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('link','FAIL'))")
+          f1=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://file.io || true)
+          u=$(echo "$f1" | grep -o '"link":"[^"]*"' | head -1 | cut -d'"' -f4)
+          [ -z "$u" ] && u=FAIL
           echo "::notice title=IPA_FILEIO::$u"
-          t1=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://tmpfiles.org/api/v1/upload)
-          u2=$(echo "$t1" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('url','FAIL'))")
+          t1=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://tmpfiles.org/api/v1/upload || true)
+          u2=$(echo "$t1" | grep -o '"url":"[^"]*"' | head -1 | cut -d'"' -f4)
+          [ -z "$u2" ] && u2=FAIL
           echo "::notice title=IPA_TMPFILES::$u2"
