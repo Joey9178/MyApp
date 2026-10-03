@@ -30,7 +30,8 @@ jobs:
       - name: Upload to temp host
         if: success()
         run: |
-          url1=$(curl -s -F "reqtype=fileupload" -F "fileToUpload=@MyApp.ipa" https://catbox.moe/user/api.php)
-          echo "::notice title=IPA_CATBOX::$url1"
-          url2=$(curl -s --upload-file MyApp.ipa https://transfer.sh/MyApp.ipa)
-          echo "::notice title=IPA_TRANSFER::$url2"
+          t1=$(curl -s -A "curl" -F "reqtype=fileupload" -F "fileToUpload=@MyApp.ipa" https://catbox.moe/user/api.php)
+          echo "::notice title=IPA_CATBOX::$t1"
+          t2=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://tmpfiles.org/api/v1/upload)
+          url2=$(echo "$t2" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('url','FAIL'))")
+          echo "::notice title=IPA_TMPFILES::$url2"
