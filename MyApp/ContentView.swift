@@ -4,7 +4,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             CounterView()
-                .tabItem { Label("计数器", systemImage: "plusminus") }
+                .tabItem { Label("计数器", systemImage: "plusminus.circle.fill") }
             CalculatorView()
                 .tabItem { Label("计算器", systemImage: "calculator") }
             TodoView()
@@ -15,32 +15,66 @@ struct ContentView: View {
     }
 }
 
+struct LiquidBackground: View {
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color(red: 0.08, green: 0.12, blue: 0.30), Color(red: 0.22, green: 0.10, blue: 0.38)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            RadialGradient(colors: [.blue.opacity(0.5), .clear], center: .topLeading, startRadius: 0, endRadius: 520)
+                .ignoresSafeArea()
+            RadialGradient(colors: [.purple.opacity(0.55), .clear], center: .bottomTrailing, startRadius: 0, endRadius: 620)
+                .ignoresSafeArea()
+            RadialGradient(colors: [.orange.opacity(0.3), .clear], center: .bottomLeading, startRadius: 0, endRadius: 420)
+                .ignoresSafeArea()
+        }
+        .ignoresSafeArea()
+    }
+}
+
 struct CounterView: View {
     @State private var count = 0
 
     var body: some View {
-        VStack(spacing: 28) {
-            Text("计数器")
-                .font(.largeTitle.bold())
-            Text("\(count)")
-                .font(.system(size: 96, weight: .heavy))
-                .contentTransition(.numericText())
-            HStack(spacing: 28) {
-                Button { count -= 1 } label: {
-                    Image(systemName: "minus.circle.fill").font(.system(size: 56))
+        ZStack {
+            LiquidBackground()
+            GlassEffectContainer {
+                VStack(spacing: 26) {
+                    Label("计数器", systemImage: "plusminus.circle.fill")
+                        .font(.title2.bold())
+                        .foregroundStyle(.white)
+                    Text("\(count)")
+                        .font(.system(size: 110, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                        .contentTransition(.numericText())
+                    HStack(spacing: 28) {
+                        Button { count -= 1 } label: {
+                            Image(systemName: "minus")
+                                .font(.system(size: 34, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 84, height: 84)
+                        }
+                        .glassEffect(in: Circle())
+                        Button { count += 1 } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 34, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 84, height: 84)
+                        }
+                        .glassEffect(in: Circle())
+                    }
+                    Button("重置") { count = 0 }
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 12)
+                        .glassEffect(in: Capsule())
                 }
-                .glassEffect(in: RoundedRectangle(cornerRadius: 30, style: .continuous))
-                Button { count += 1 } label: {
-                    Image(systemName: "plus.circle.fill").font(.system(size: 56))
-                }
-                .glassEffect(in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+                .padding(30)
             }
-            Button("重置") { count = 0 }
-                .font(.headline)
-                .glassEffect(in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
-        .padding(36)
-        .glassEffect(in: RoundedRectangle(cornerRadius: 40, style: .continuous))
     }
 }
 
@@ -59,29 +93,37 @@ struct CalculatorView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 14) {
-            Text("计算器")
-                .font(.largeTitle.bold())
-            Text(display)
-                .font(.system(size: 52, weight: .bold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-            ForEach(rows, id: \.self) { row in
-                HStack(spacing: 12) {
-                    ForEach(row, id: \.self) { key in
-                        Button(action: { press(key) }) {
-                            Text(key)
-                                .font(.system(size: 30, weight: .medium))
-                                .frame(maxWidth: .infinity, minHeight: 60)
+        ZStack {
+            LiquidBackground()
+            GlassEffectContainer {
+                VStack(spacing: 14) {
+                    Label("计算器", systemImage: "calculator")
+                        .font(.title2.bold())
+                        .foregroundStyle(.white)
+                    Text(display)
+                        .font(.system(size: 54, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .padding(.horizontal, 6)
+                    ForEach(rows, id: \.self) { row in
+                        HStack(spacing: 12) {
+                            ForEach(row, id: \.self) { key in
+                                Button { press(key) } label: {
+                                    Text(key)
+                                        .font(.system(size: 28, weight: .semibold))
+                                        .foregroundStyle(.white)
+                                        .frame(maxWidth: .infinity, minHeight: 62)
+                                }
+                                .glassEffect(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            }
                         }
-                        .glassEffect(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                     }
                 }
+                .padding(20)
             }
         }
-        .padding(20)
-        .glassEffect(in: RoundedRectangle(cornerRadius: 30, style: .continuous))
     }
 
     func press(_ key: String) {
@@ -121,39 +163,51 @@ struct TodoView: View {
     @State private var text = ""
 
     var body: some View {
-        VStack(spacing: 16) {
-            Text("待办清单")
-                .font(.largeTitle.bold())
-            HStack {
-                TextField("添加事项…", text: $text)
-                    .textFieldStyle(.plain)
-                    .padding()
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-                Button("添加") {
-                    if !text.isEmpty { items.append(text); save(); text = "" }
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            List {
-                ForEach(items, id: \.self) { item in
+        ZStack {
+            LiquidBackground()
+            GlassEffectContainer {
+                VStack(spacing: 16) {
+                    Label("待办清单", systemImage: "checklist")
+                        .font(.title2.bold())
+                        .foregroundStyle(.white)
                     HStack {
-                        Text(item)
-                            .font(.title3)
-                        Spacer()
+                        TextField("添加事项…", text: $text)
+                            .foregroundStyle(.white)
+                            .padding()
+                            .glassEffect(in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         Button {
-                            items.removeAll { $0 == item }
-                            save()
+                            if !text.isEmpty { items.append(text); save(); text = "" }
                         } label: {
-                            Image(systemName: "trash.fill")
-                                .foregroundStyle(.red)
+                            Image(systemName: "plus")
+                                .font(.title3.bold())
+                                .foregroundStyle(.white)
+                                .frame(width: 50, height: 50)
+                        }
+                        .glassEffect(in: Circle())
+                    }
+                    List {
+                        ForEach(items, id: \.self) { item in
+                            HStack {
+                                Text(item)
+                                    .font(.title3)
+                                    .foregroundStyle(.white)
+                                Spacer()
+                                Button {
+                                    items.removeAll { $0 == item }
+                                    save()
+                                } label: {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.green)
+                                }
+                            }
+                            .listRowBackground(Color.clear)
                         }
                     }
+                    .scrollContentBackground(.hidden)
                 }
+                .padding(20)
             }
-            .scrollContentBackground(.hidden)
         }
-        .padding(20)
-        .glassEffect(in: RoundedRectangle(cornerRadius: 30, style: .continuous))
     }
 
     func save() {
@@ -165,16 +219,23 @@ struct NotesView: View {
     @AppStorage("note") private var note = ""
 
     var body: some View {
-        VStack(spacing: 16) {
-            Text("备忘录")
-                .font(.largeTitle.bold())
-            TextEditor(text: $note)
-                .font(.title3)
-                .frame(minHeight: 280)
-                .scrollContentBackground(.hidden)
+        ZStack {
+            LiquidBackground()
+            GlassEffectContainer {
+                VStack(spacing: 16) {
+                    Label("备忘录", systemImage: "note.text")
+                        .font(.title2.bold())
+                        .foregroundStyle(.white)
+                    TextEditor(text: $note)
+                        .font(.title3)
+                        .foregroundStyle(.white)
+                        .frame(minHeight: 300)
+                        .scrollContentBackground(.hidden)
+                        .glassEffect(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                }
+                .padding(20)
+            }
         }
-        .padding(20)
-        .glassEffect(in: RoundedRectangle(cornerRadius: 30, style: .continuous))
     }
 }
 
