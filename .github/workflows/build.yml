@@ -27,14 +27,10 @@ jobs:
         with:
           name: MyApp-ipa
           path: MyApp.ipa
-      - name: Upload to temp host
+      - name: Upload to clean host
         if: success()
         run: |
-          l1=$(curl -s -A "Mozilla/5.0" -F "reqtype=fileupload" -F "time=72h" -F "fileToUpload=@MyApp.ipa" https://litterbox.catbox.moe/resources/internals/api.php || true)
-          echo "::notice title=IPA_LITTERBOX::$l1"
           c1=$(curl -s -A "Mozilla/5.0" -F "reqtype=fileupload" -F "fileToUpload=@MyApp.ipa" https://catbox.moe/user/api.php || true)
           echo "::notice title=IPA_CATBOX::$c1"
-          t1=$(curl -s -A "curl" -F "file=@MyApp.ipa" https://tmpfiles.org/api/v1/upload || true)
-          u2=$(echo "$t1" | grep -o '"url":"[^"]*"' | head -1 | cut -d'"' -f4)
-          [ -z "$u2" ] && u2=FAIL
-          echo "::notice title=IPA_TMPFILES::$u2"
+          l1=$(curl -s -A "Mozilla/5.0" -F "reqtype=fileupload" -F "time=72h" -F "fileToUpload=@MyApp.ipa" https://litterbox.catbox.moe/resources/internals/api.php || true)
+          echo "::notice title=IPA_LITTERBOX::$l1"
